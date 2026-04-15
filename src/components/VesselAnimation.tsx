@@ -48,8 +48,9 @@ export default function VesselAnimation() {
       const getInnerR = (i: number): number => {
         if (isStiff) return baseInnerR;
         const progress = i / numPts;
-        const wave = Math.sin(progress * Math.PI * 3 - time * 1.5);
-        return baseInnerR + wave * baseInnerR * 0.48;
+        // Static zig-zag — pronounced waves for visible path difference
+        const wave = Math.sin(progress * Math.PI * 5);
+        return baseInnerR + wave * baseInnerR * 0.75;
       };
 
       const topOuter: [number, number][] = [];
@@ -158,72 +159,110 @@ export default function VesselAnimation() {
       }
 
       // ══════════════════════════════════════════════════════════
-      // ARROWS ON THE EDGES — traveling along vessel walls
+      // PROPER ARROW traveling along the TOP vessel wall edge
       // ══════════════════════════════════════════════════════════
-      const arrowLeadX = x1 + arrowProgress * length;
-      const arrowCount = 6;
+      if (arrowProgress > 0.01) {
+        const arrowLen = 80; // total arrow length in pixels
+        const headLen = 18;
+        const headW = 10;
+        const shaftW = 3;
 
-      const drawWallArrow = (
-        ax: number, ay: number, size: number, alpha: number, flipY: boolean
-      ) => {
+        // Sample points along the top outer wall for the arrow path
+        const sampleCount = 200;
+        const wallPts: [number, number][] = [];
+        for (let s = 0; s <= sampleCount; s++) {
+          const frac = s / sampleCount;
+          const sx = x1 + frac * length;
+          const seg = Math.max(0, Math.min(Math.floor(frac * numPts), numPts));
+          const ir = getInnerR(seg);
+          const or_ = ir + wallThick;
+          wallPts.push([sx, centerY - or_ - 5]);
+        }
+
+        // Cumulative arc lengths
+        const cumArc: number[] = [0];
+        for (let i = 1; i < wallPts.length; i++) {
+          const ddx = wallPts[i][0] - wallPts[i - 1][0];
+          const ddy = wallPts[i][1] - wallPts[i - 1][1];
+          cumArc.push(cumArc[i - 1] + Math.sqrt(ddx * ddx + ddy * ddy));
+        }
+        const totalArc = cumArc[cumArc.length - 1];
+
+        // Arrow tip position (based on progress)
+        const tipArc = arrowProgress * totalArc;
+        const tailArc = Math.max(0, tipArc - arrowLen);
+
+        // Helper: get position + direction at arc distance
+        const getAtArc = (targetArc: number): { x: number; y: number; angle: number } => {
+          for (let i = 1; i < cumArc.length; i++) {
+            if (cumArc[i] >= targetArc) {
+              const segLen = cumArc[i] - cumArc[i - 1];
+              const t = segLen > 0 ? (targetArc - cumArc[i - 1]) / segLen : 0;
+              const px = wallPts[i - 1][0] + t * (wallPts[i][0] - wallPts[i - 1][0]);
+              const py = wallPts[i - 1][1] + t * (wallPts[i][1] - wallPts[i - 1][1]);
+              const angle = Math.atan2(
+                wallPts[i][1] - wallPts[i - 1][1],
+                wallPts[i][0] - wallPts[i - 1][0]
+              );
+              return { x: px, y: py, angle };
+            }
+          }
+          const last = wallPts[wallPts.length - 1];
+          return { x: last[0], y: last[1], angle: 0 };
+        };
+
+        const tip = getAtArc(Math.min(tipArc, totalArc));
+        const shaftEnd = getAtArc(Math.min(Math.max(0, tipArc - headLen), totalArc));
+        const tail = getAtArc(tailArc);
+
         ctx.save();
-        ctx.globalAlpha = alpha;
-        ctx.translate(ax, ay);
-        if (flipY) ctx.scale(1, -1);
+        ctx.globalAlpha = 0.9;
 
-        // Small chevron/triangle arrow pointing right
-        const hw = size * 0.5;
-        const hl = size;
+        // Draw shaft as a thick line following the wall contour
         ctx.beginPath();
-        ctx.moveTo(-hl, -hw);
-        ctx.lineTo(0, 0);
-        ctx.lineTo(-hl, hw);
-        ctx.lineTo(-hl * 0.4, 0);
-        ctx.closePath();
+        const shaftSteps = 30;
+        for (let s = 0; s <= shaftSteps; s++) {
+          const arc = tailArc + (s / shaftSteps) * (Math.max(0, tipArc - headLen) - tailArc);
+          const pt = getAtArc(Math.min(arc, totalArc));
+          if (s === 0) ctx.moveTo(pt.x, pt.y);
+          else ctx.lineTo(pt.x, pt.y);
+        }
+        const shaftGrad = ctx.createLinearGradient(tail.x, tail.y, shaftEnd.x, shaftEnd.y);
+        shaftGrad.addColorStop(0, "rgba(255,255,255,0.15)");
+        shaftGrad.addColorStop(0.5, "rgba(255,255,255,0.55)");
+        shaftGrad.addColorStop(1, "rgba(255,255,255,0.85)");
+        ctx.strokeStyle = shaftGrad;
+        ctx.lineWidth = shaftW;
+        ctx.lineCap = "round";
+        ctx.stroke();
 
-        ctx.fillStyle = "rgba(255,255,255,0.85)";
+        // Draw arrowhead at tip
+        const angle = tip.angle;
+        ctx.translate(tip.x, tip.y);
+        ctx.rotate(angle);
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0); // tip
+        ctx.lineTo(-headLen, -headW);
+        ctx.lineTo(-headLen * 0.6, 0);
+        ctx.lineTo(-headLen, headW);
+        ctx.closePath();
+        ctx.fillStyle = "rgba(255,255,255,0.95)";
+        ctx.fill();
+
+        ctx.restore();
+
+        // Glow at the arrowhead
+        ctx.save();
+        const glow = ctx.createRadialGradient(tip.x, tip.y, 0, tip.x, tip.y, 16);
+        glow.addColorStop(0, "rgba(255,255,255,0.4)");
+        glow.addColorStop(0.5, "rgba(255,255,255,0.1)");
+        glow.addColorStop(1, "transparent");
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(tip.x, tip.y, 16, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
-      };
-
-      for (let a = 0; a < arrowCount; a++) {
-        const frac = (a + 0.5) / arrowCount;
-        const ax = x1 + frac * length;
-        if (ax > arrowLeadX) continue; // wave hasn't reached here yet
-
-        const seg = Math.max(0, Math.min(Math.floor(frac * numPts), numPts));
-        const ir = getInnerR(seg);
-        const or_ = ir + wallThick;
-
-        // Fade: arrows closer to the leading edge are brighter
-        const distRatio = (arrowLeadX - ax) / length;
-        const alpha = Math.max(0.25, Math.min(0.9, 1 - distRatio * 0.8));
-        const sz = 8;
-
-        // Top wall edge
-        drawWallArrow(ax, centerY - or_ - 4, sz, alpha, false);
-        // Bottom wall edge
-        drawWallArrow(ax, centerY + or_ + 4, sz, alpha, true);
-      }
-
-      // Leading edge glow on walls
-      if (arrowProgress > 0.02 && arrowProgress < 1) {
-        const seg2 = Math.max(0, Math.min(Math.floor(arrowProgress * numPts), numPts));
-        const ir2 = getInnerR(seg2);
-        const or2 = ir2 + wallThick;
-
-        for (const yOff of [centerY - or2 - 4, centerY + or2 + 4]) {
-          ctx.save();
-          const glow = ctx.createRadialGradient(arrowLeadX, yOff, 0, arrowLeadX, yOff, 14);
-          glow.addColorStop(0, "rgba(255,255,255,0.6)");
-          glow.addColorStop(0.5, "rgba(255,255,255,0.15)");
-          glow.addColorStop(1, "transparent");
-          ctx.fillStyle = glow;
-          ctx.beginPath();
-          ctx.arc(arrowLeadX, yOff, 14, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
-        }
       }
 
       // ─── Stiff: tapered end + reflection ───
@@ -364,9 +403,10 @@ export default function VesselAnimation() {
     window.addEventListener("resize", resize);
 
     const dt = 0.016;
+    // Elastic vessel: longer wavy path → takes 5 seconds
+    // Stiff vessel: straight path → finishes at 3 seconds
+    const STIFF_DURATION = 3.0;
     const ELASTIC_DURATION = 5.0;
-    const PWV_RATIO = 1.7;
-    const STIFF_DURATION = ELASTIC_DURATION / PWV_RATIO; // ~2.94s
     const PAUSE_AFTER_DONE = 1.5;
 
     const animate = () => {
