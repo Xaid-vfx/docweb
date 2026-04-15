@@ -8,20 +8,19 @@ export default function VesselAnimation() {
   const timeRef = useRef(0);
   const heartImgRef = useRef<HTMLImageElement | null>(null);
 
-  // Pulse cycle state
+  // Race cycle state
   const cycleRef = useRef({
-    stiffProgress: 0,   // 0→1 how far along the stiff path
-    elasticProgress: 0,  // 0→1 how far along the elastic path
+    stiffProgress: 0,
+    elasticProgress: 0,
     stiffDone: false,
     elasticDone: false,
     stiffTime: 0,
     elasticTime: 0,
-    cycleTimer: 0,       // total elapsed since last reset
+    cycleTimer: 0,
     paused: false,
     pauseTimer: 0,
   });
 
-  /* Load heart SVG image */
   useEffect(() => {
     const img = new Image();
     img.src = "/heart-diagram.svg";
@@ -29,54 +28,7 @@ export default function VesselAnimation() {
   }, []);
 
   /* ------------------------------------------------------------------ */
-  /*  Compute path length along vessel wall edge                         */
-  /* ------------------------------------------------------------------ */
-  const computePathPoints = useCallback(
-    (
-      x1: number,
-      centerY: number,
-      length: number,
-      baseInnerR: number,
-      wallThick: number,
-      time: number,
-      isStiff: boolean,
-      numPts: number
-    ): { points: [number, number][]; totalLen: number; cumLen: number[] } => {
-      const dx = length / numPts;
-      const points: [number, number][] = [];
-
-      for (let i = 0; i <= numPts; i++) {
-        const x = x1 + i * dx;
-        let ir: number;
-        if (isStiff) {
-          ir = baseInnerR;
-        } else {
-          const progress = i / numPts;
-          const wave = Math.sin(progress * Math.PI * 3 - time * 1.5);
-          ir = baseInnerR + wave * baseInnerR * 0.48;
-        }
-        const or_ = ir + wallThick;
-        // Track along the TOP outer wall edge
-        points.push([x, centerY - or_]);
-      }
-
-      // Compute cumulative arc-length
-      const cumLen: number[] = [0];
-      let total = 0;
-      for (let i = 1; i < points.length; i++) {
-        const dx2 = points[i][0] - points[i - 1][0];
-        const dy2 = points[i][1] - points[i - 1][1];
-        total += Math.sqrt(dx2 * dx2 + dy2 * dy2);
-        cumLen.push(total);
-      }
-
-      return { points, totalLen: total, cumLen };
-    },
-    []
-  );
-
-  /* ------------------------------------------------------------------ */
-  /*  Draw a 3D cylindrical vessel tube                                  */
+  /*  Draw 3D vessel tube                                                */
   /* ------------------------------------------------------------------ */
   const drawVessel3D = useCallback(
     (
@@ -87,7 +39,8 @@ export default function VesselAnimation() {
       baseInnerR: number,
       wallThick: number,
       time: number,
-      isStiff: boolean
+      isStiff: boolean,
+      arrowProgress: number // 0→1, leading edge of the arrow wave
     ) => {
       const numPts = 300;
       const dx = length / numPts;
@@ -184,7 +137,7 @@ export default function VesselAnimation() {
       ctx.lineWidth = 1;
       ctx.stroke();
 
-      // Lumen edge
+      // Lumen edges
       ctx.beginPath(); tracePath(topInner);
       ctx.strokeStyle = "rgba(255, 160, 160, 0.2)"; ctx.lineWidth = 0.8; ctx.stroke();
       ctx.beginPath(); tracePath(botInner);
@@ -204,7 +157,109 @@ export default function VesselAnimation() {
         ctx.fill();
       }
 
-      // ─── Stiff vessel: tapered end + reflection ───
+      // ══════════════════════════════════════════════════════════
+      // WHITE ARROWS inside the vessel — flowing with arrowProgress
+      // ══════════════════════════════════════════════════════════
+      const arrowLeadX = x1 + arrowProgress * length;
+
+      if (isStiff) {
+        // Single large arrow that grows from left, leading edge moves right
+        const arrTailX = x1 + 8;
+        const arrHeadX = Math.min(arrowLeadX, x1 + length - 5);
+
+        if (arrHeadX > arrTailX + 30) {
+          const arrW = baseInnerR * 0.35;
+          const headW = baseInnerR * 0.7;
+          const headLen = 28;
+
+          ctx.save();
+          ctx.globalAlpha = 0.85;
+
+          ctx.beginPath();
+          ctx.moveTo(arrTailX, centerY - arrW);
+          ctx.lineTo(arrHeadX - headLen, centerY - arrW);
+          ctx.lineTo(arrHeadX - headLen, centerY - headW);
+          ctx.lineTo(arrHeadX, centerY);
+          ctx.lineTo(arrHeadX - headLen, centerY + headW);
+          ctx.lineTo(arrHeadX - headLen, centerY + arrW);
+          ctx.lineTo(arrTailX, centerY + arrW);
+          ctx.closePath();
+
+          const ag = ctx.createLinearGradient(arrTailX, 0, arrHeadX, 0);
+          ag.addColorStop(0, "rgba(255,255,255,0.1)");
+          ag.addColorStop(0.3, "rgba(255,255,255,0.4)");
+          ag.addColorStop(0.7, "rgba(255,255,255,0.7)");
+          ag.addColorStop(1, "rgba(255,255,255,0.95)");
+          ctx.fillStyle = ag;
+          ctx.fill();
+
+          ctx.globalAlpha = 1;
+          ctx.restore();
+        }
+      } else {
+        // Multiple smaller arrows flowing inside, all up to arrowLeadX
+        const arrowCount = 5;
+        const spacing = length / (arrowCount + 1);
+
+        for (let a = 0; a < arrowCount; a++) {
+          const nominalX = x1 + (a + 1) * spacing;
+          if (nominalX > arrowLeadX) continue; // not yet reached
+
+          const seg = Math.floor(((nominalX - x1) / length) * numPts);
+          const ir = getInnerR(Math.max(0, Math.min(seg, numPts)));
+
+          // Fade based on how close to the lead
+          const distFromLead = (arrowLeadX - nominalX) / length;
+          const alpha = Math.min(0.85, 0.3 + distFromLead * 1.5);
+
+          const arrW = ir * 0.25;
+          const headW = ir * 0.5;
+          const headLen = 14;
+          const bodyLen = 22;
+
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.translate(nominalX, centerY);
+
+          ctx.beginPath();
+          ctx.moveTo(-bodyLen, -arrW);
+          ctx.lineTo(0, -arrW);
+          ctx.lineTo(0, -headW);
+          ctx.lineTo(headLen, 0);
+          ctx.lineTo(0, headW);
+          ctx.lineTo(0, arrW);
+          ctx.lineTo(-bodyLen, arrW);
+          ctx.closePath();
+
+          const aGrad = ctx.createLinearGradient(-bodyLen, 0, headLen, 0);
+          aGrad.addColorStop(0, "rgba(255,255,255,0.2)");
+          aGrad.addColorStop(1, "rgba(255,255,255,0.9)");
+          ctx.fillStyle = aGrad;
+          ctx.fill();
+          ctx.globalAlpha = 1;
+          ctx.restore();
+        }
+
+        // Leading edge glow
+        if (arrowProgress > 0.02 && arrowProgress < 1) {
+          const seg2 = Math.floor(arrowProgress * numPts);
+          const ir2 = getInnerR(Math.max(0, Math.min(seg2, numPts)));
+          ctx.save();
+          const gx = arrowLeadX;
+          const glowR = ir2 * 0.6;
+          const glow = ctx.createRadialGradient(gx, centerY, 0, gx, centerY, glowR + 8);
+          glow.addColorStop(0, "rgba(255,255,255,0.5)");
+          glow.addColorStop(0.5, "rgba(255,255,255,0.15)");
+          glow.addColorStop(1, "transparent");
+          ctx.fillStyle = glow;
+          ctx.beginPath();
+          ctx.arc(gx, centerY, glowR + 8, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // ─── Stiff: tapered end + reflection ───
       if (isStiff) {
         const endX = x1 + length;
         const taperLen = 35;
@@ -246,7 +301,7 @@ export default function VesselAnimation() {
         ctx.fillText("reflection", endX + taperLen + 12, centerY + 4);
       }
 
-      // ─── Elastic vessel: expansion/compression arrows ───
+      // ─── Elastic: expansion/compression arrows ───
       if (!isStiff) {
         for (let n = 0; n < 3; n++) {
           const progress = (n + 0.5) / 3;
@@ -323,125 +378,6 @@ export default function VesselAnimation() {
   }
 
   /* ------------------------------------------------------------------ */
-  /*  Draw the glowing pulse dot at a position along the path            */
-  /* ------------------------------------------------------------------ */
-  function drawPulseDot(
-    ctx: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    color: string,
-    glowColor: string,
-    time: number
-  ) {
-    const pulse = 6 + Math.sin(time * 8) * 2;
-
-    // Outer glow
-    ctx.save();
-    const glow = ctx.createRadialGradient(x, y, 0, x, y, pulse + 12);
-    glow.addColorStop(0, glowColor);
-    glow.addColorStop(0.5, glowColor.replace("0.6", "0.2"));
-    glow.addColorStop(1, "transparent");
-    ctx.fillStyle = glow;
-    ctx.beginPath();
-    ctx.arc(x, y, pulse + 12, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Inner dot
-    ctx.beginPath();
-    ctx.arc(x, y, pulse, 0, Math.PI * 2);
-    ctx.fillStyle = color;
-    ctx.fill();
-    ctx.strokeStyle = "rgba(255,255,255,0.8)";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    // Bright center
-    ctx.beginPath();
-    ctx.arc(x, y, 3, 0, Math.PI * 2);
-    ctx.fillStyle = "white";
-    ctx.fill();
-
-    ctx.restore();
-  }
-
-  /* ------------------------------------------------------------------ */
-  /*  Interpolate position along cumulative-length path                  */
-  /* ------------------------------------------------------------------ */
-  function getPositionAtProgress(
-    points: [number, number][],
-    cumLen: number[],
-    totalLen: number,
-    progress: number
-  ): [number, number] {
-    const targetLen = progress * totalLen;
-
-    for (let i = 1; i < cumLen.length; i++) {
-      if (cumLen[i] >= targetLen) {
-        const segStart = cumLen[i - 1];
-        const segEnd = cumLen[i];
-        const t = (targetLen - segStart) / (segEnd - segStart);
-        return [
-          points[i - 1][0] + t * (points[i][0] - points[i - 1][0]),
-          points[i - 1][1] + t * (points[i][1] - points[i - 1][1]),
-        ];
-      }
-    }
-    return points[points.length - 1];
-  }
-
-  /* ------------------------------------------------------------------ */
-  /*  Draw timer display                                                 */
-  /* ------------------------------------------------------------------ */
-  function drawTimer(
-    ctx: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    elapsed: number,
-    done: boolean,
-    color: string,
-    label: string
-  ) {
-    const timeStr = elapsed.toFixed(2) + "s";
-
-    // Background pill
-    ctx.save();
-    const pillW = 120;
-    const pillH = 48;
-    const pillX = x - pillW / 2;
-    const pillY = y - pillH / 2;
-    const radius = 12;
-
-    ctx.beginPath();
-    ctx.roundRect(pillX, pillY, pillW, pillH, radius);
-    ctx.fillStyle = done ? "rgba(40, 180, 80, 0.15)" : "rgba(255,255,255,0.05)";
-    ctx.fill();
-    ctx.strokeStyle = done ? "rgba(40, 180, 80, 0.5)" : "rgba(255,255,255,0.1)";
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    // Timer icon (⏱)
-    ctx.font = "14px 'Inter', sans-serif";
-    ctx.fillStyle = "rgba(232,232,240,0.5)";
-    ctx.textAlign = "center";
-    ctx.fillText(label, x, pillY + 16);
-
-    // Time value
-    ctx.font = `bold 18px 'Space Grotesk', 'Inter', monospace`;
-    ctx.fillStyle = done ? "#4ade80" : color;
-    ctx.textAlign = "center";
-    ctx.fillText(timeStr, x, pillY + 38);
-
-    // Check mark if done
-    if (done) {
-      ctx.font = "bold 14px 'Inter', sans-serif";
-      ctx.fillStyle = "#4ade80";
-      ctx.fillText("✓", x + pillW / 2 - 16, pillY + 38);
-    }
-
-    ctx.restore();
-  }
-
-  /* ------------------------------------------------------------------ */
   /*  Main render loop                                                   */
   /* ------------------------------------------------------------------ */
   useEffect(() => {
@@ -460,11 +396,11 @@ export default function VesselAnimation() {
     resize();
     window.addEventListener("resize", resize);
 
-    // PWV in stiff arteries: ~12 m/s, elastic: ~7 m/s → 1.7x ratio
-    const STIFF_SPEED = 320;   // faster pulse propagation
-    const ELASTIC_SPEED = 190; // slower due to wall absorption
     const dt = 0.016;
-    const PAUSE_AFTER_DONE = 2.0; // seconds to show finished state
+    const ELASTIC_DURATION = 5.0;
+    const PWV_RATIO = 1.7;
+    const STIFF_DURATION = ELASTIC_DURATION / PWV_RATIO; // ~2.94s
+    const PAUSE_AFTER_DONE = 1.5;
 
     const animate = () => {
       const w = canvas.clientWidth;
@@ -480,24 +416,15 @@ export default function VesselAnimation() {
       const heartAreaW = heartImgSize + 20;
       const vesselStartX = heartAreaW + 10;
       const vesselLen = w - vesselStartX - 110;
-      const stiffY = h * 0.27;
-      const elasticY = h * 0.73;
-      const numPts = 300;
+      const stiffY = h * 0.28;
+      const elasticY = h * 0.72;
 
-      // ─── Compute path lengths ───
-      const stiffPath = computePathPoints(
-        vesselStartX, stiffY, vesselLen, 20, 14, t, true, numPts
-      );
-      const elasticPath = computePathPoints(
-        vesselStartX, elasticY, vesselLen, 20, 14, t, false, numPts
-      );
-
-      // ─── Update pulse positions ───
+      // ─── Update race ───
       if (!c.paused) {
         c.cycleTimer += dt;
 
         if (!c.stiffDone) {
-          c.stiffProgress += (STIFF_SPEED * dt) / stiffPath.totalLen;
+          c.stiffProgress += dt / STIFF_DURATION;
           c.stiffTime = c.cycleTimer;
           if (c.stiffProgress >= 1) {
             c.stiffProgress = 1;
@@ -506,7 +433,7 @@ export default function VesselAnimation() {
         }
 
         if (!c.elasticDone) {
-          c.elasticProgress += (ELASTIC_SPEED * dt) / elasticPath.totalLen;
+          c.elasticProgress += dt / ELASTIC_DURATION;
           c.elasticTime = c.cycleTimer;
           if (c.elasticProgress >= 1) {
             c.elasticProgress = 1;
@@ -514,7 +441,6 @@ export default function VesselAnimation() {
           }
         }
 
-        // Both done → pause then reset
         if (c.stiffDone && c.elasticDone) {
           c.paused = true;
           c.pauseTimer = 0;
@@ -554,70 +480,11 @@ export default function VesselAnimation() {
         ctx.moveTo(imgX + drawW - 5, stiffY + 5);
         ctx.lineTo(vesselStartX, stiffY);
         const cg = ctx.createLinearGradient(imgX + drawW, stiffY, vesselStartX, stiffY);
-        cg.addColorStop(0, "#d08080");
-        cg.addColorStop(1, "#8b2020");
-        ctx.strokeStyle = cg;
-        ctx.lineWidth = 5;
-        ctx.stroke();
+        cg.addColorStop(0, "#d08080"); cg.addColorStop(1, "#8b2020");
+        ctx.strokeStyle = cg; ctx.lineWidth = 5; ctx.stroke();
       }
 
-      drawVessel3D(ctx, vesselStartX, stiffY, vesselLen, 20, 14, t, true);
-
-      // Stiff pulse dot
-      if (c.stiffProgress > 0) {
-        const pos = getPositionAtProgress(
-          stiffPath.points, stiffPath.cumLen, stiffPath.totalLen,
-          Math.min(c.stiffProgress, 1)
-        );
-        drawPulseDot(ctx, pos[0], pos[1], "#ff6b6b", "rgba(255, 107, 107, 0.6)", t);
-
-        // Trail
-        ctx.save();
-        ctx.beginPath();
-        const trailStart = Math.max(0, c.stiffProgress - 0.15);
-        for (let p = trailStart; p <= c.stiffProgress; p += 0.002) {
-          const tp = getPositionAtProgress(
-            stiffPath.points, stiffPath.cumLen, stiffPath.totalLen, p
-          );
-          if (p === trailStart) ctx.moveTo(tp[0], tp[1]);
-          else ctx.lineTo(tp[0], tp[1]);
-        }
-        ctx.strokeStyle = "rgba(255, 107, 107, 0.4)";
-        ctx.lineWidth = 3;
-        ctx.stroke();
-        ctx.restore();
-      }
-
-      // Stiff timer
-      drawTimer(ctx, vesselStartX + vesselLen + 60, stiffY,
-        c.stiffTime, c.stiffDone, "#e88080", "⏱ PWV");
-
-      // Label chain
-      const chainY = stiffY + 56;
-      ctx.textAlign = "center";
-      ctx.font = "bold 13px 'Inter', sans-serif";
-      ctx.fillStyle = "rgba(232,232,240,0.8)";
-      ctx.fillText("↓ Arterial distensibility", vesselStartX + vesselLen * 0.15, chainY);
-      ctx.font = "11px 'Inter', sans-serif";
-      ctx.fillStyle = "rgba(232,232,240,0.4)";
-      ctx.fillText("(↑ Elastic modulus)", vesselStartX + vesselLen * 0.15, chainY + 16);
-      ctx.font = "16px 'Inter', sans-serif";
-      ctx.fillStyle = "rgba(232,232,240,0.3)";
-      ctx.fillText("→", vesselStartX + vesselLen * 0.33, chainY);
-      ctx.font = "bold 13px 'Inter', sans-serif";
-      ctx.fillStyle = "#e88080";
-      ctx.fillText("Minimal wall", vesselStartX + vesselLen * 0.47, chainY);
-      ctx.fillText("deformation", vesselStartX + vesselLen * 0.47, chainY + 16);
-      ctx.font = "16px 'Inter', sans-serif";
-      ctx.fillStyle = "rgba(232,232,240,0.3)";
-      ctx.fillText("→", vesselStartX + vesselLen * 0.62, chainY);
-      ctx.font = "13px 'Inter', sans-serif";
-      ctx.fillStyle = "rgba(232,232,240,0.7)";
-      ctx.fillText("Faster pressure wave", vesselStartX + vesselLen * 0.78, chainY);
-      ctx.fillText("propagation", vesselStartX + vesselLen * 0.78, chainY + 16);
-      ctx.font = "bold 13px 'Inter', sans-serif";
-      ctx.fillStyle = "#e88080";
-      ctx.fillText("→ Increased PWV (↑)", vesselStartX + vesselLen * 0.78, chainY + 32);
+      drawVessel3D(ctx, vesselStartX, stiffY, vesselLen, 20, 14, t, true, c.stiffProgress);
 
       // ── Divider ──
       ctx.beginPath();
@@ -633,81 +500,89 @@ export default function VesselAnimation() {
       ctx.textAlign = "center";
       ctx.fillText("Elastic Vessel (↑ Compliance)", vesselStartX + vesselLen / 2, elasticY - 78);
 
-      // Connector bar for elastic
       const barX = vesselStartX - 30;
-      const barH2 = 56;
+      const barH = 56;
       ctx.fillStyle = "rgba(232,232,240,0.12)";
-      ctx.fillRect(barX - 4, elasticY - barH2 / 2, 8, barH2);
+      ctx.fillRect(barX - 4, elasticY - barH / 2, 8, barH);
       ctx.strokeStyle = "rgba(232,232,240,0.2)";
       ctx.lineWidth = 1;
-      ctx.strokeRect(barX - 4, elasticY - barH2 / 2, 8, barH2);
+      ctx.strokeRect(barX - 4, elasticY - barH / 2, 8, barH);
       ctx.beginPath();
       ctx.moveTo(barX + 4, elasticY);
       ctx.lineTo(vesselStartX, elasticY);
       const cg2 = ctx.createLinearGradient(barX, elasticY, vesselStartX, elasticY);
-      cg2.addColorStop(0, "#d08080");
-      cg2.addColorStop(1, "#8b2020");
-      ctx.strokeStyle = cg2;
-      ctx.lineWidth = 5;
-      ctx.stroke();
+      cg2.addColorStop(0, "#d08080"); cg2.addColorStop(1, "#8b2020");
+      ctx.strokeStyle = cg2; ctx.lineWidth = 5; ctx.stroke();
 
-      drawVessel3D(ctx, vesselStartX, elasticY, vesselLen, 20, 14, t, false);
+      drawVessel3D(ctx, vesselStartX, elasticY, vesselLen, 20, 14, t, false, c.elasticProgress);
 
-      // Elastic pulse dot
-      if (c.elasticProgress > 0) {
-        const pos = getPositionAtProgress(
-          elasticPath.points, elasticPath.cumLen, elasticPath.totalLen,
-          Math.min(c.elasticProgress, 1)
-        );
-        drawPulseDot(ctx, pos[0], pos[1], "#5dade2", "rgba(93, 173, 226, 0.6)", t);
+      // ══════════════════════════════════════════════════════════
+      //  TIMERS — drawn BELOW the label chains, outside the diagram
+      // ══════════════════════════════════════════════════════════
 
-        // Trail
-        ctx.save();
-        ctx.beginPath();
-        const trailStart = Math.max(0, c.elasticProgress - 0.15);
-        for (let p = trailStart; p <= c.elasticProgress; p += 0.002) {
-          const tp = getPositionAtProgress(
-            elasticPath.points, elasticPath.cumLen, elasticPath.totalLen, p
-          );
-          if (p === trailStart) ctx.moveTo(tp[0], tp[1]);
-          else ctx.lineTo(tp[0], tp[1]);
-        }
-        ctx.strokeStyle = "rgba(93, 173, 226, 0.4)";
-        ctx.lineWidth = 3;
-        ctx.stroke();
-        ctx.restore();
-      }
+      // Stiff timer — positioned below stiff vessel labels
+      const stiffTimerY = stiffY + 52;
+      const timerX = vesselStartX + vesselLen + 65;
+      drawTimer(ctx, timerX, stiffTimerY, c.stiffTime, c.stiffDone, "#e88080", "Stiff");
 
-      // Elastic timer
-      drawTimer(ctx, vesselStartX + vesselLen + 60, elasticY,
-        c.elasticTime, c.elasticDone, "#5dade2", "⏱ PWV");
+      // Elastic timer — positioned below elastic vessel labels
+      const elasticTimerY = elasticY + 52;
+      drawTimer(ctx, timerX, elasticTimerY, c.elasticTime, c.elasticDone, "#5dade2", "Elastic");
 
-      // Label chain
+      // ─── Label chains ───
+      // Stiff labels
+      const chainY = stiffY + 56;
+      ctx.textAlign = "center";
+      ctx.font = "bold 13px 'Inter', sans-serif";
+      ctx.fillStyle = "rgba(232,232,240,0.8)";
+      ctx.fillText("↓ Arterial distensibility", vesselStartX + vesselLen * 0.12, chainY);
+      ctx.font = "11px 'Inter', sans-serif";
+      ctx.fillStyle = "rgba(232,232,240,0.4)";
+      ctx.fillText("(↑ Elastic modulus)", vesselStartX + vesselLen * 0.12, chainY + 16);
+      ctx.font = "16px 'Inter', sans-serif";
+      ctx.fillStyle = "rgba(232,232,240,0.3)";
+      ctx.fillText("→", vesselStartX + vesselLen * 0.28, chainY);
+      ctx.font = "bold 13px 'Inter', sans-serif";
+      ctx.fillStyle = "#e88080";
+      ctx.fillText("Minimal wall", vesselStartX + vesselLen * 0.40, chainY);
+      ctx.fillText("deformation", vesselStartX + vesselLen * 0.40, chainY + 16);
+      ctx.font = "16px 'Inter', sans-serif";
+      ctx.fillStyle = "rgba(232,232,240,0.3)";
+      ctx.fillText("→", vesselStartX + vesselLen * 0.53, chainY);
+      ctx.font = "13px 'Inter', sans-serif";
+      ctx.fillStyle = "rgba(232,232,240,0.7)";
+      ctx.fillText("Faster pressure wave", vesselStartX + vesselLen * 0.68, chainY);
+      ctx.fillText("propagation", vesselStartX + vesselLen * 0.68, chainY + 16);
+      ctx.font = "bold 13px 'Inter', sans-serif";
+      ctx.fillStyle = "#e88080";
+      ctx.fillText("→ ↑ PWV", vesselStartX + vesselLen * 0.82, chainY + 8);
+
+      // Elastic labels
       const chainY2 = elasticY + 72;
       ctx.font = "bold 13px 'Inter', sans-serif";
       ctx.fillStyle = "rgba(232,232,240,0.8)";
       ctx.textAlign = "center";
-      ctx.fillText("↑ Arterial distensibility", vesselStartX + vesselLen * 0.15, chainY2);
+      ctx.fillText("↑ Arterial distensibility", vesselStartX + vesselLen * 0.12, chainY2);
       ctx.font = "11px 'Inter', sans-serif";
       ctx.fillStyle = "rgba(232,232,240,0.4)";
-      ctx.fillText("(↓ Elastic modulus)", vesselStartX + vesselLen * 0.15, chainY2 + 16);
+      ctx.fillText("(↓ Elastic modulus)", vesselStartX + vesselLen * 0.12, chainY2 + 16);
       ctx.font = "16px 'Inter', sans-serif";
       ctx.fillStyle = "rgba(232,232,240,0.3)";
-      ctx.fillText("→", vesselStartX + vesselLen * 0.33, chainY2);
+      ctx.fillText("→", vesselStartX + vesselLen * 0.28, chainY2);
       ctx.font = "bold 13px 'Inter', sans-serif";
       ctx.fillStyle = "#5dade2";
-      ctx.fillText("Greater wall", vesselStartX + vesselLen * 0.47, chainY2);
-      ctx.fillText("deformation", vesselStartX + vesselLen * 0.47, chainY2 + 16);
+      ctx.fillText("Greater wall", vesselStartX + vesselLen * 0.40, chainY2);
+      ctx.fillText("deformation", vesselStartX + vesselLen * 0.40, chainY2 + 16);
       ctx.font = "16px 'Inter', sans-serif";
       ctx.fillStyle = "rgba(232,232,240,0.3)";
-      ctx.fillText("→", vesselStartX + vesselLen * 0.62, chainY2);
+      ctx.fillText("→", vesselStartX + vesselLen * 0.53, chainY2);
       ctx.font = "13px 'Inter', sans-serif";
       ctx.fillStyle = "rgba(232,232,240,0.7)";
-      ctx.fillText("Slower pressure wave", vesselStartX + vesselLen * 0.78, chainY2);
-      ctx.fillText("propagation", vesselStartX + vesselLen * 0.78, chainY2 + 16);
+      ctx.fillText("Slower pressure wave", vesselStartX + vesselLen * 0.68, chainY2);
+      ctx.fillText("propagation", vesselStartX + vesselLen * 0.68, chainY2 + 16);
       ctx.font = "bold 13px 'Inter', sans-serif";
       ctx.fillStyle = "#5dade2";
-      ctx.fillText("→ Lower PWV (↓)", vesselStartX + vesselLen * 0.78, chainY2 + 32);
+      ctx.fillText("→ ↓ PWV", vesselStartX + vesselLen * 0.82, chainY2 + 8);
 
       animRef.current = requestAnimationFrame(animate);
     };
@@ -717,7 +592,48 @@ export default function VesselAnimation() {
       cancelAnimationFrame(animRef.current);
       window.removeEventListener("resize", resize);
     };
-  }, [drawVessel3D, computePathPoints]);
+  }, [drawVessel3D]);
+
+  function drawTimer(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    elapsed: number,
+    done: boolean,
+    color: string,
+    label: string
+  ) {
+    const timeStr = elapsed.toFixed(1) + "s";
+    const pillW = 90;
+    const pillH = 52;
+    const pillX = x - pillW / 2;
+    const pillY = y - pillH / 2;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(pillX, pillY, pillW, pillH, 10);
+    ctx.fillStyle = done ? "rgba(40, 180, 80, 0.12)" : "rgba(255,255,255,0.04)";
+    ctx.fill();
+    ctx.strokeStyle = done ? "rgba(40, 180, 80, 0.4)" : "rgba(255,255,255,0.08)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.font = "11px 'Inter', sans-serif";
+    ctx.fillStyle = "rgba(232,232,240,0.45)";
+    ctx.textAlign = "center";
+    ctx.fillText("⏱ " + label, x, pillY + 16);
+
+    ctx.font = "bold 20px 'Space Grotesk', monospace";
+    ctx.fillStyle = done ? "#4ade80" : color;
+    ctx.fillText(timeStr, x, pillY + 40);
+
+    if (done) {
+      ctx.font = "14px 'Inter', sans-serif";
+      ctx.fillStyle = "#4ade80";
+      ctx.fillText("✓", x + 32, pillY + 40);
+    }
+    ctx.restore();
+  }
 
   return (
     <div className="w-full">
@@ -733,9 +649,9 @@ export default function VesselAnimation() {
             Stiff Vessel — ↓ Compliance
           </h4>
           <p className="text-xs text-[rgba(232,232,240,0.55)] leading-relaxed">
-            Rigid arterial walls = straight path. The pulse wave travels at the
-            same speed but covers less distance, arriving at the destination
-            faster → higher measured PWV.
+            Rigid walls → pulse wave propagates faster, arrives sooner.
+            Watch the arrow: same distance, less time. Higher PWV = faster
+            arrival = increased cardiac afterload.
           </p>
         </div>
         <div className="p-4 rounded-xl border border-[rgba(93,173,226,0.2)] bg-[rgba(93,173,226,0.03)]">
@@ -744,9 +660,9 @@ export default function VesselAnimation() {
             Elastic Vessel — ↑ Compliance
           </h4>
           <p className="text-xs text-[rgba(232,232,240,0.55)] leading-relaxed">
-            Flexible walls deform with each pulse, creating a longer path along
-            the vessel wall. Same wave speed but more ground to cover →
-            the pulse arrives later → lower measured PWV.
+            Flexible walls absorb energy → pulse wave travels slower.
+            The Windkessel effect buffers each pulse. Lower PWV =
+            healthier ventricular–arterial coupling.
           </p>
         </div>
       </div>
