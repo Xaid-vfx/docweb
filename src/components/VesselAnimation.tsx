@@ -158,102 +158,69 @@ export default function VesselAnimation() {
       }
 
       // ══════════════════════════════════════════════════════════
-      // WHITE ARROWS inside the vessel — flowing with arrowProgress
+      // ARROWS ON THE EDGES — traveling along vessel walls
       // ══════════════════════════════════════════════════════════
       const arrowLeadX = x1 + arrowProgress * length;
+      const arrowCount = 6;
 
-      if (isStiff) {
-        // Single large arrow that grows from left, leading edge moves right
-        const arrTailX = x1 + 8;
-        const arrHeadX = Math.min(arrowLeadX, x1 + length - 5);
+      const drawWallArrow = (
+        ax: number, ay: number, size: number, alpha: number, flipY: boolean
+      ) => {
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.translate(ax, ay);
+        if (flipY) ctx.scale(1, -1);
 
-        if (arrHeadX > arrTailX + 30) {
-          const arrW = baseInnerR * 0.35;
-          const headW = baseInnerR * 0.7;
-          const headLen = 28;
+        // Small chevron/triangle arrow pointing right
+        const hw = size * 0.5;
+        const hl = size;
+        ctx.beginPath();
+        ctx.moveTo(-hl, -hw);
+        ctx.lineTo(0, 0);
+        ctx.lineTo(-hl, hw);
+        ctx.lineTo(-hl * 0.4, 0);
+        ctx.closePath();
 
+        ctx.fillStyle = "rgba(255,255,255,0.85)";
+        ctx.fill();
+        ctx.restore();
+      };
+
+      for (let a = 0; a < arrowCount; a++) {
+        const frac = (a + 0.5) / arrowCount;
+        const ax = x1 + frac * length;
+        if (ax > arrowLeadX) continue; // wave hasn't reached here yet
+
+        const seg = Math.max(0, Math.min(Math.floor(frac * numPts), numPts));
+        const ir = getInnerR(seg);
+        const or_ = ir + wallThick;
+
+        // Fade: arrows closer to the leading edge are brighter
+        const distRatio = (arrowLeadX - ax) / length;
+        const alpha = Math.max(0.25, Math.min(0.9, 1 - distRatio * 0.8));
+        const sz = 8;
+
+        // Top wall edge
+        drawWallArrow(ax, centerY - or_ - 4, sz, alpha, false);
+        // Bottom wall edge
+        drawWallArrow(ax, centerY + or_ + 4, sz, alpha, true);
+      }
+
+      // Leading edge glow on walls
+      if (arrowProgress > 0.02 && arrowProgress < 1) {
+        const seg2 = Math.max(0, Math.min(Math.floor(arrowProgress * numPts), numPts));
+        const ir2 = getInnerR(seg2);
+        const or2 = ir2 + wallThick;
+
+        for (const yOff of [centerY - or2 - 4, centerY + or2 + 4]) {
           ctx.save();
-          ctx.globalAlpha = 0.85;
-
-          ctx.beginPath();
-          ctx.moveTo(arrTailX, centerY - arrW);
-          ctx.lineTo(arrHeadX - headLen, centerY - arrW);
-          ctx.lineTo(arrHeadX - headLen, centerY - headW);
-          ctx.lineTo(arrHeadX, centerY);
-          ctx.lineTo(arrHeadX - headLen, centerY + headW);
-          ctx.lineTo(arrHeadX - headLen, centerY + arrW);
-          ctx.lineTo(arrTailX, centerY + arrW);
-          ctx.closePath();
-
-          const ag = ctx.createLinearGradient(arrTailX, 0, arrHeadX, 0);
-          ag.addColorStop(0, "rgba(255,255,255,0.1)");
-          ag.addColorStop(0.3, "rgba(255,255,255,0.4)");
-          ag.addColorStop(0.7, "rgba(255,255,255,0.7)");
-          ag.addColorStop(1, "rgba(255,255,255,0.95)");
-          ctx.fillStyle = ag;
-          ctx.fill();
-
-          ctx.globalAlpha = 1;
-          ctx.restore();
-        }
-      } else {
-        // Multiple smaller arrows flowing inside, all up to arrowLeadX
-        const arrowCount = 5;
-        const spacing = length / (arrowCount + 1);
-
-        for (let a = 0; a < arrowCount; a++) {
-          const nominalX = x1 + (a + 1) * spacing;
-          if (nominalX > arrowLeadX) continue; // not yet reached
-
-          const seg = Math.floor(((nominalX - x1) / length) * numPts);
-          const ir = getInnerR(Math.max(0, Math.min(seg, numPts)));
-
-          // Fade based on how close to the lead
-          const distFromLead = (arrowLeadX - nominalX) / length;
-          const alpha = Math.min(0.85, 0.3 + distFromLead * 1.5);
-
-          const arrW = ir * 0.25;
-          const headW = ir * 0.5;
-          const headLen = 14;
-          const bodyLen = 22;
-
-          ctx.save();
-          ctx.globalAlpha = alpha;
-          ctx.translate(nominalX, centerY);
-
-          ctx.beginPath();
-          ctx.moveTo(-bodyLen, -arrW);
-          ctx.lineTo(0, -arrW);
-          ctx.lineTo(0, -headW);
-          ctx.lineTo(headLen, 0);
-          ctx.lineTo(0, headW);
-          ctx.lineTo(0, arrW);
-          ctx.lineTo(-bodyLen, arrW);
-          ctx.closePath();
-
-          const aGrad = ctx.createLinearGradient(-bodyLen, 0, headLen, 0);
-          aGrad.addColorStop(0, "rgba(255,255,255,0.2)");
-          aGrad.addColorStop(1, "rgba(255,255,255,0.9)");
-          ctx.fillStyle = aGrad;
-          ctx.fill();
-          ctx.globalAlpha = 1;
-          ctx.restore();
-        }
-
-        // Leading edge glow
-        if (arrowProgress > 0.02 && arrowProgress < 1) {
-          const seg2 = Math.floor(arrowProgress * numPts);
-          const ir2 = getInnerR(Math.max(0, Math.min(seg2, numPts)));
-          ctx.save();
-          const gx = arrowLeadX;
-          const glowR = ir2 * 0.6;
-          const glow = ctx.createRadialGradient(gx, centerY, 0, gx, centerY, glowR + 8);
-          glow.addColorStop(0, "rgba(255,255,255,0.5)");
+          const glow = ctx.createRadialGradient(arrowLeadX, yOff, 0, arrowLeadX, yOff, 14);
+          glow.addColorStop(0, "rgba(255,255,255,0.6)");
           glow.addColorStop(0.5, "rgba(255,255,255,0.15)");
           glow.addColorStop(1, "transparent");
           ctx.fillStyle = glow;
           ctx.beginPath();
-          ctx.arc(gx, centerY, glowR + 8, 0, Math.PI * 2);
+          ctx.arc(arrowLeadX, yOff, 14, 0, Math.PI * 2);
           ctx.fill();
           ctx.restore();
         }
