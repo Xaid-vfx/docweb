@@ -52,27 +52,15 @@ export default function VesselAnimation({
       const numPts = 300;
       const dx = length / numPts;
 
-      // Dynamic deformation: elastic vessel bulges outward at the wavefront
-      // and contracts back behind it — a single traveling pulse through a rubber tube
-      const getInnerR = (i: number): number => {
-        if (isStiff) return baseInnerR;
-        if (arrowProgress < 0.01) return baseInnerR;
+      // Simple smooth traveling bulge. Both walls push outward uniformly.
+      const getDeformation = (i: number): number => {
+        if (isStiff) return 0;
+        if (arrowProgress < 0.01) return 0;
         const frac = i / numPts;
-        if (frac > arrowProgress) return baseInnerR;
-
         const behind = arrowProgress - frac;
-        const pulseWidth = 0.12;
-
-        if (behind < pulseWidth) {
-          // Expansion phase: smooth bulge centered at the wavefront
-          const t = behind / pulseWidth;
-          const bulge = Math.sin(t * Math.PI);
-          return baseInnerR + bulge * baseInnerR * 0.55;
-        }
-
-        // Behind the pulse: vessel settles back to resting size
-        const settle = Math.min(1, (behind - pulseWidth) / 0.08);
-        return baseInnerR + (1 - settle) * baseInnerR * 0.0;
+        if (behind < 0 || behind > 0.25) return 0;
+        // Smooth bell: raised cosine over 25% of vessel length
+        return 0.35 * (1 + Math.cos(Math.PI * 2 * (behind / 0.25 - 0.5))) * 0.5;
       };
 
       const topOuter: [number, number][] = [];
@@ -82,7 +70,8 @@ export default function VesselAnimation({
 
       for (let i = 0; i <= numPts; i++) {
         const x = x1 + i * dx;
-        const ir = getInnerR(i);
+        const deform = getDeformation(i);
+        const ir = baseInnerR + deform * baseInnerR;
         const or_ = ir + wallThick;
         topOuter.push([x, centerY - or_]);
         topInner.push([x, centerY - ir]);
@@ -168,7 +157,8 @@ export default function VesselAnimation({
 
       // Left end-cap
       {
-        const ir0 = getInnerR(0);
+        const d0 = getDeformation(0);
+        const ir0 = baseInnerR * (1 + d0);
         const or0 = ir0 + wallThick;
         ctx.beginPath();
         ctx.ellipse(x1, centerY, 4 * scale, or0, 0, 0, Math.PI * 2);
@@ -193,7 +183,8 @@ export default function VesselAnimation({
           const frac = s / sampleCount;
           const sx = x1 + frac * length;
           const seg = Math.max(0, Math.min(Math.floor(frac * numPts), numPts));
-          const ir = getInnerR(seg);
+          const dSeg = getDeformation(seg);
+          const ir = baseInnerR * (1 + dSeg);
           const or_ = ir + wallThick;
           wallPts.push([sx, centerY - or_ - 5 * scale]);
         }
@@ -315,18 +306,15 @@ export default function VesselAnimation({
         ctx.fillStyle = "#4a0505"; ctx.fill();
       }
 
-      // Elastic vessel: wall deformation labels near wavefront
-      if (!isStiff && arrowProgress > 0.08 && arrowProgress < 0.95 && !isMobile && scale > 0.45) {
+      // Elastic vessel: "Wall expansion" label at the bulge
+      if (!isStiff && arrowProgress > 0.10 && arrowProgress < 0.92 && !isMobile && scale > 0.45) {
         const labelSize = Math.round(11 * scale);
-
-        // "Expansion" label at the peak of the bulge (halfway through the pulse)
-        const peakFrac = Math.max(0, arrowProgress - 0.06);
-        const peakI = Math.floor(peakFrac * numPts);
-        const peakR = getInnerR(peakI);
-        const peakOR = peakR + wallThick;
-        const peakX = x1 + peakFrac * length;
-
-        if (peakR > baseInnerR * 1.1) {
+        const peakFrac = Math.max(0, arrowProgress - 0.125);
+        const peakD = getDeformation(Math.floor(peakFrac * numPts));
+        if (peakD > 0.15) {
+          const peakR = baseInnerR + peakD * baseInnerR;
+          const peakOR = peakR + wallThick;
+          const peakX = x1 + peakFrac * length;
           ctx.save();
           ctx.font = `bold ${labelSize}px 'Inter', sans-serif`;
           ctx.fillStyle = "rgba(93, 173, 226, 0.8)";
@@ -336,18 +324,21 @@ export default function VesselAnimation({
           ctx.restore();
         }
 
-        // "Relaxation" label where the wall has returned to normal behind the pulse
-        if (arrowProgress > 0.22) {
-          const relaxFrac = Math.max(0, arrowProgress - 0.18);
-          const relaxX = x1 + relaxFrac * length;
-          const relaxOR = baseInnerR + wallThick;
-          ctx.save();
-          ctx.font = `bold ${labelSize}px 'Inter', sans-serif`;
-          ctx.fillStyle = "rgba(93, 173, 226, 0.5)";
-          ctx.textAlign = "center";
-          ctx.fillText("Wall relaxation", relaxX, centerY + relaxOR + 16 * scale);
-          drawRadialArrows(ctx, relaxX, centerY, relaxOR, false, scale);
-          ctx.restore();
+        // "Wall relaxation" behind the bulge where the vessel has settled back
+        if (arrowProgress > 0.30) {
+          const relaxFrac = Math.max(0, arrowProgress - 0.28);
+          const relaxD = getDeformation(Math.floor(relaxFrac * numPts));
+          if (relaxD < 0.05) {
+            const relaxX = x1 + relaxFrac * length;
+            const relaxOR = baseInnerR + wallThick;
+            ctx.save();
+            ctx.font = `bold ${labelSize}px 'Inter', sans-serif`;
+            ctx.fillStyle = "rgba(93, 173, 226, 0.45)";
+            ctx.textAlign = "center";
+            ctx.fillText("Wall relaxation", relaxX, centerY + relaxOR + 14 * scale);
+            drawRadialArrows(ctx, relaxX, centerY, relaxOR, false, scale);
+            ctx.restore();
+          }
         }
       }
     },
@@ -495,7 +486,7 @@ export default function VesselAnimation({
       ctx.stroke();
 
       // ──── ELASTIC VESSEL ────
-      const maxDeformR = Math.round(baseR * 1.55) + wallT;
+      const maxDeformR = Math.round(baseR * 1.50) + wallT;
       const elasticTitleOffset = isMobile
         ? maxDeformR + 18
         : 78 * scale;
