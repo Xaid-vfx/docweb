@@ -230,7 +230,7 @@ export default function Home() {
             className="group flex items-center gap-3 outline-none"
           >
             <span
-              className={`text-[10px] font-medium tracking-[0.12em] uppercase transition-all duration-300 ${
+              className={`text-[11px] font-medium tracking-[0.12em] uppercase transition-all duration-300 ${
                 current === i
                   ? "opacity-100 text-[rgba(232,232,240,0.8)]"
                   : "opacity-0 group-hover:opacity-100 text-[rgba(232,232,240,0.35)]"
@@ -271,10 +271,10 @@ export default function Home() {
 
       {/* ── Desktop bottom bar ── */}
       <div className="fixed bottom-5 left-0 right-0 z-50 hidden md:flex items-center justify-between px-6">
-        <span className="text-[10px] text-[rgba(232,232,240,0.12)] tracking-[0.15em] font-mono">
+        <span className="text-[11px] text-[rgba(232,232,240,0.12)] tracking-[0.15em] font-mono">
           {String(current + 1).padStart(2, "0")} — {String(SLIDES.length).padStart(2, "0")}
         </span>
-        <span className="text-[10px] text-[rgba(232,232,240,0.14)] tracking-wider">
+        <span className="text-[11px] text-[rgba(232,232,240,0.14)] tracking-wider">
           Use your scroll wheel, arrow keys, or click the dots on the right to navigate between sections
         </span>
       </div>
@@ -329,7 +329,7 @@ function CoverSlide() {
         <div className="relative z-10 text-center max-w-4xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 rounded-full bg-[rgba(230,57,70,0.07)] border border-[rgba(230,57,70,0.12)] mb-6 md:mb-8">
             <span className="w-[6px] h-[6px] rounded-full bg-[#e63946] pulse-dot-sm" />
-            <span className="text-[9px] md:text-[10px] font-semibold tracking-[0.18em] uppercase text-[#e63946]">
+            <span className="text-[11px] font-semibold tracking-[0.18em] uppercase text-[#e63946]">
               Scoping Review
             </span>
           </div>
@@ -352,7 +352,7 @@ function CoverSlide() {
           </div>
 
           {/* Authors */}
-          <div className="flex flex-wrap justify-center gap-x-2 md:gap-x-3 gap-y-1 text-[11px] md:text-[12px] text-[rgba(232,232,240,0.5)] mb-2">
+          <div className="flex flex-wrap justify-center gap-x-2 md:gap-x-3 gap-y-1 text-[13px] text-[rgba(232,232,240,0.5)] mb-2">
             {["Oren Nedjar, B.S.¹", "Zaneh Kahook, B.S.¹", "Syed Maaz Shah, B.S.²", "Christos G. Mihos, D.O.³", "Marc Kesselman, D.O.¹"].map(
               (a, i, arr) => (
                 <span key={i}>
@@ -366,22 +366,22 @@ function CoverSlide() {
           </div>
 
           {/* Affiliations */}
-          <p className="text-[9px] md:text-[10px] text-[rgba(232,232,240,0.25)] leading-relaxed max-w-xl mx-auto hidden sm:block">
+          <p className="text-[11px] text-[rgba(232,232,240,0.25)] leading-relaxed max-w-xl mx-auto hidden sm:block">
             ¹ Nova Southeastern University Dr. Kiran C. Patel College of Osteopathic Medicine ·{" "}
             ² Kansas City College of Osteopathic Medicine ·{" "}
             ³ Division of Cardiology, Mount Sinai Medical Center, Miami Beach, FL
           </p>
-          <p className="text-[9px] text-[rgba(232,232,240,0.25)] leading-relaxed sm:hidden">
+          <p className="text-[11px] text-[rgba(232,232,240,0.25)] leading-relaxed sm:hidden">
             ¹ NSU KPCOM · ² Kansas City COM · ³ Mount Sinai, Miami Beach
           </p>
 
           {/* Award callout */}
-          <p className="mt-4 md:mt-5 text-[10px] md:text-[11px] text-[rgba(232,232,240,0.35)] italic">
+          <p className="mt-4 md:mt-5 text-[12px] text-[rgba(232,232,240,0.35)] italic">
             Previously presented and awarded at the FIU Translational Research Conference
           </p>
 
           {/* Supplemental note */}
-          <p className="mt-4 md:mt-5 text-[10px] md:text-[11px] text-[rgba(232,232,240,0.32)] leading-relaxed max-w-lg mx-auto">
+          <p className="mt-4 md:mt-5 text-[12px] text-[rgba(232,232,240,0.32)] leading-relaxed max-w-lg mx-auto">
             This website is a supplemental academic companion to the poster presented at the
             Heart of the City Cardiovascular Symposium (Cleveland Clinic Florida). It is intended
             to provide expanded mechanistic context, supporting evidence, and anticipated
@@ -395,13 +395,13 @@ function CoverSlide() {
 
         {/* ─ Contact footer ─ */}
         <div className="relative z-10 w-full max-w-lg mx-auto text-center pt-6 md:pt-8 border-t border-[rgba(232,232,240,0.06)]">
-          <p className="text-[10px] md:text-[11px] text-[rgba(232,232,240,0.3)] mb-3">
+          <p className="text-[12px] text-[rgba(232,232,240,0.3)] mb-3">
             Open to collaboration and research connections in cardiovascular medicine.
           </p>
           <div className="flex items-center justify-center gap-4">
             <a
               href="mailto:on68@mynsu.nova.edu"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] text-[10px] md:text-[11px] text-[rgba(232,232,240,0.45)] hover:text-[rgba(232,232,240,0.7)] hover:border-[rgba(255,255,255,0.12)] transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] text-[12px] text-[rgba(232,232,240,0.45)] hover:text-[rgba(232,232,240,0.7)] hover:border-[rgba(255,255,255,0.12)] transition-colors"
             >
               <span>✉</span> on68@mynsu.nova.edu
             </a>
@@ -409,7 +409,7 @@ function CoverSlide() {
               href="http://www.linkedin.com/in/oren-nedjar"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] text-[10px] md:text-[11px] text-[rgba(232,232,240,0.45)] hover:text-[rgba(232,232,240,0.7)] hover:border-[rgba(255,255,255,0.12)] transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] text-[12px] text-[rgba(232,232,240,0.45)] hover:text-[rgba(232,232,240,0.7)] hover:border-[rgba(255,255,255,0.12)] transition-colors"
             >
               <span>in</span> LinkedIn
             </a>
@@ -448,7 +448,7 @@ function BackgroundSlide() {
             <div className="space-y-2.5 md:space-y-3">
               <div className="p-3 md:p-4 rounded-xl bg-[rgba(230,57,70,0.03)] border border-[rgba(230,57,70,0.1)]">
                 <h3 className="font-semibold text-[#e63946] text-xs md:text-sm mb-1">Atrial Fibrillation</h3>
-                <p className="text-[11px] md:text-[12px] text-[rgba(232,232,240,0.5)] leading-relaxed">
+                <p className="text-[13px] text-[rgba(232,232,240,0.5)] leading-relaxed">
                   Most common sustained arrhythmia worldwide (&gt;50M people), associated with
                   increased risk of stroke, heart failure, and mortality.
                 </p>
@@ -456,7 +456,7 @@ function BackgroundSlide() {
 
               <div className="p-3 md:p-4 rounded-xl bg-[rgba(69,123,157,0.03)] border border-[rgba(69,123,157,0.1)]">
                 <h3 className="font-semibold text-[#457b9d] text-xs md:text-sm mb-1">Arterial Stiffness & PWV</h3>
-                <p className="text-[11px] md:text-[12px] text-[rgba(232,232,240,0.5)] leading-relaxed">
+                <p className="text-[13px] text-[rgba(232,232,240,0.5)] leading-relaxed">
                   Arterial stiffness reflects vascular aging and cumulative cardiovascular risk.
                   PWV is the gold-standard noninvasive measure.
                 </p>
@@ -464,7 +464,7 @@ function BackgroundSlide() {
 
               <div className="p-3 md:p-4 rounded-xl bg-[rgba(42,157,143,0.03)] border border-[rgba(42,157,143,0.1)]">
                 <h3 className="font-semibold text-[#2a9d8f] text-xs md:text-sm mb-1">The Knowledge Gap</h3>
-                <p className="text-[11px] md:text-[12px] text-[rgba(232,232,240,0.5)] leading-relaxed">
+                <p className="text-[13px] text-[rgba(232,232,240,0.5)] leading-relaxed">
                   The clinical role of PWV across the spectrum of AF remains unclear — this review
                   evaluates its significance across prediction, association, and management.
                 </p>
@@ -482,7 +482,7 @@ function BackgroundSlide() {
             </div>
 
             <div className="mb-5 md:mb-8">
-              <h4 className="text-[9px] md:text-[10px] font-semibold uppercase tracking-[0.15em] text-[rgba(232,232,240,0.3)] mb-2 md:mb-3">
+              <h4 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[rgba(232,232,240,0.3)] mb-2 md:mb-3">
                 Objective
               </h4>
               <ul className="space-y-1 md:space-y-1.5">
@@ -497,7 +497,7 @@ function BackgroundSlide() {
                 ].map((item, i) => (
                   <li
                     key={i}
-                    className="flex items-start gap-2 text-[11px] md:text-[12px] text-[rgba(232,232,240,0.5)]"
+                    className="flex items-start gap-2 text-[13px] text-[rgba(232,232,240,0.5)]"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-[#457b9d] mt-[4px] flex-shrink-0" />
                     {item}
@@ -507,7 +507,7 @@ function BackgroundSlide() {
             </div>
 
             <div>
-              <h4 className="text-[9px] md:text-[10px] font-semibold uppercase tracking-[0.15em] text-[rgba(232,232,240,0.3)] mb-3">
+              <h4 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[rgba(232,232,240,0.3)] mb-3">
                 PRISMA Flow
               </h4>
               <div className="flex items-start gap-1.5 md:gap-2">
@@ -526,15 +526,15 @@ function BackgroundSlide() {
                       }}
                     >
                       <span
-                        className="text-[10px] md:text-[11px] font-mono font-bold block"
+                        className="text-[12px] font-mono font-bold block"
                         style={{ color: step.color }}
                       >
                         {step.num}
                       </span>
-                      <span className="text-[10px] md:text-[11px] font-semibold text-[rgba(232,232,240,0.65)] block mt-0.5">
+                      <span className="text-[12px] font-semibold text-[rgba(232,232,240,0.65)] block mt-0.5">
                         {step.title}
                       </span>
-                      <span className="text-[8px] md:text-[9px] text-[rgba(232,232,240,0.25)] hidden sm:inline">{step.sub}</span>
+                      <span className="text-[10px] text-[rgba(232,232,240,0.25)] hidden sm:inline">{step.sub}</span>
                     </div>
                     {i < 3 && (
                       <span className="text-[rgba(232,232,240,0.1)] text-xs md:text-sm mt-3 md:mt-4 flex-shrink-0">→</span>
@@ -557,14 +557,14 @@ function VesselSlide() {
   return (
     <div className="h-full flex flex-col items-center justify-center px-2 md:px-6 relative">
       <div className="text-center mb-2 md:mb-3">
-        <p className="text-[9px] md:text-[10px] font-semibold tracking-[0.18em] uppercase text-[rgba(232,232,240,0.25)] mb-1">
+        <p className="text-[11px] font-semibold tracking-[0.18em] uppercase text-[rgba(232,232,240,0.25)] mb-1">
           Mechanistic Model
         </p>
         <h2 className="text-sm md:text-xl font-bold mb-0.5 md:mb-1 text-[rgba(232,232,240,0.9)]">
           How does <span className="gradient-text-blue">PWV</span> help us assess{" "}
           <span className="gradient-text">arterial stiffness</span>?
         </h2>
-        <p className="text-[10px] md:text-[12px] text-[rgba(232,232,240,0.3)] hidden sm:block">
+        <p className="text-[12px] text-[rgba(232,232,240,0.3)] hidden sm:block">
           Compliant vessel → wall deforms → energy absorbed → slow wave &nbsp;|&nbsp;
           Stiff vessel → minimal deformation → fast wave
         </p>
@@ -607,14 +607,14 @@ function VesselSlide() {
             </defs>
           </svg>
           <div className="text-left">
-            <p className="text-[9px] md:text-[10px] text-[rgba(232,232,240,0.3)] leading-relaxed">
+            <p className="text-[11px] text-[rgba(232,232,240,0.3)] leading-relaxed">
               <span className="text-[#e88080] font-semibold">A</span> = Carotid artery &nbsp;
               <span className="text-[#5dade2] font-semibold">B</span> = Femoral artery
             </p>
-            <p className="text-[10px] md:text-[11px] text-[rgba(232,232,240,0.5)] font-mono mt-0.5">
+            <p className="text-[12px] text-[rgba(232,232,240,0.5)] font-mono mt-0.5">
               cfPWV = ΔL / Δt
             </p>
-            <p className="text-[8px] md:text-[9px] text-[rgba(232,232,240,0.2)] mt-0.5">
+            <p className="text-[10px] text-[rgba(232,232,240,0.2)] mt-0.5">
               Probe placement determines PWV type (e.g. cfPWV, baPWV)
             </p>
           </div>
@@ -690,14 +690,14 @@ function PathwaySlide() {
         <div className="relative z-10 w-full max-w-7xl mx-auto">
           {/* Header */}
           <div className="text-center mb-4 md:mb-6">
-            <p className="text-[9px] md:text-[10px] font-semibold tracking-[0.18em] uppercase text-[rgba(232,232,240,0.25)] mb-1">
+            <p className="text-[11px] font-semibold tracking-[0.18em] uppercase text-[rgba(232,232,240,0.25)] mb-1">
               Mechanistic Model 2
             </p>
             <h2 className="text-base md:text-xl font-bold text-[rgba(232,232,240,0.9)] mb-1.5">
               How does <span className="gradient-text">arterial stiffness</span> lead to{" "}
               <span className="gradient-text-blue">atrial fibrillation</span>?
             </h2>
-            <p className="text-[9px] md:text-[10px] text-[rgba(232,232,240,0.28)] italic max-w-lg mx-auto">
+            <p className="text-[11px] text-[rgba(232,232,240,0.28)] italic max-w-lg mx-auto">
               Proposed mechanistic pathway (supported by observational and mechanistic evidence)
             </p>
           </div>
@@ -763,19 +763,19 @@ function PathwayCard({
     >
       <div className="flex items-start gap-2 mb-1">
         <span
-          className="text-[10px] md:text-[11px] font-mono font-bold flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
+          className="text-[12px] font-mono font-bold flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
           style={{ background: `${step.color}18`, color: step.color }}
         >
           {step.num}
         </span>
         <h3
-          className="text-[11px] md:text-[12px] font-semibold leading-tight"
+          className="text-[13px] font-semibold leading-tight"
           style={{ color: step.color }}
         >
           {step.title}
         </h3>
       </div>
-      <p className="text-[9px] md:text-[10px] text-[rgba(232,232,240,0.42)] leading-relaxed pl-7">
+      <p className="text-[11px] text-[rgba(232,232,240,0.42)] leading-relaxed pl-7">
         {step.detail}
       </p>
       {/* Thumbnail image */}
@@ -835,7 +835,7 @@ function EvidenceSlide() {
               <h2 className="text-lg md:text-2xl font-bold text-[rgba(232,232,240,0.95)]">
                 Evidence Summary
               </h2>
-              <p className="text-[9px] md:text-[10px] text-[rgba(232,232,240,0.25)] tracking-wider uppercase">
+              <p className="text-[11px] text-[rgba(232,232,240,0.25)] tracking-wider uppercase">
                 Results & Discussion — click a section to expand
               </p>
             </div>
@@ -858,7 +858,7 @@ function EvidenceSlide() {
                     className="w-full flex items-center gap-3 px-3.5 md:px-4 py-2.5 md:py-3 text-left outline-none group"
                   >
                     <div
-                      className="w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] md:text-[11px] font-mono font-bold transition-colors"
+                      className="w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center flex-shrink-0 text-[12px] font-mono font-bold transition-colors"
                       style={{
                         background: isOpen ? section.color : `${section.color}18`,
                         color: isOpen ? "#050510" : section.color,
@@ -886,7 +886,7 @@ function EvidenceSlide() {
                         {section.paragraphs.map((para, j) => (
                           <p
                             key={j}
-                            className="text-[10px] md:text-[11px] text-[rgba(232,232,240,0.45)] leading-relaxed"
+                            className="text-[12px] text-[rgba(232,232,240,0.45)] leading-relaxed"
                           >
                             {para}
                           </p>
@@ -948,7 +948,7 @@ function TableSlide() {
               <h2 className="text-base md:text-xl font-bold text-[rgba(232,232,240,0.95)]">
                 Table 1: Studies Included in the Review
               </h2>
-              <p className="text-[8px] md:text-[9px] text-[rgba(232,232,240,0.25)] tracking-wider uppercase">
+              <p className="text-[10px] text-[rgba(232,232,240,0.25)] tracking-wider uppercase">
                 Full evidence table — scroll horizontally and vertically to browse
               </p>
             </div>
@@ -962,7 +962,7 @@ function TableSlide() {
                   {["Reference", "Title", "AF Subtype", "PWV Type", "Sample", "Key Findings", "Design"].map((h) => (
                     <th
                       key={h}
-                      className="text-left px-2.5 md:px-3 py-2 text-[8px] md:text-[9px] font-semibold text-[#a8dadc] tracking-[0.08em] uppercase border-b border-[rgba(69,123,157,0.2)] whitespace-nowrap"
+                      className="text-left px-2.5 md:px-3 py-2 text-[10px] font-semibold text-[#a8dadc] tracking-[0.08em] uppercase border-b border-[rgba(69,123,157,0.2)] whitespace-nowrap"
                     >
                       {h}
                     </th>
@@ -975,25 +975,25 @@ function TableSlide() {
                     key={i}
                     className="border-b border-[rgba(255,255,255,0.03)] hover:bg-[rgba(69,123,157,0.06)] transition-colors"
                   >
-                    <td className="px-2.5 md:px-3 py-2 text-[9px] md:text-[10px] text-[#a8dadc] font-semibold whitespace-nowrap align-top">
+                    <td className="px-2.5 md:px-3 py-2 text-[11px] text-[#a8dadc] font-semibold whitespace-nowrap align-top">
                       {s.ref}
                     </td>
-                    <td className="px-2.5 md:px-3 py-2 text-[9px] md:text-[10px] text-[rgba(232,232,240,0.5)] leading-snug align-top max-w-[200px]">
+                    <td className="px-2.5 md:px-3 py-2 text-[11px] text-[rgba(232,232,240,0.5)] leading-snug align-top max-w-[200px]">
                       {s.title}
                     </td>
-                    <td className="px-2.5 md:px-3 py-2 text-[9px] md:text-[10px] text-[rgba(232,232,240,0.55)] align-top max-w-[120px]">
+                    <td className="px-2.5 md:px-3 py-2 text-[11px] text-[rgba(232,232,240,0.55)] align-top max-w-[120px]">
                       {s.afType}
                     </td>
-                    <td className="px-2.5 md:px-3 py-2 text-[9px] md:text-[10px] text-[#f4a261] font-medium whitespace-nowrap align-top">
+                    <td className="px-2.5 md:px-3 py-2 text-[11px] text-[#f4a261] font-medium whitespace-nowrap align-top">
                       {s.pwv}
                     </td>
-                    <td className="px-2.5 md:px-3 py-2 text-[9px] md:text-[10px] text-[rgba(232,232,240,0.45)] align-top max-w-[140px]">
+                    <td className="px-2.5 md:px-3 py-2 text-[11px] text-[rgba(232,232,240,0.45)] align-top max-w-[140px]">
                       {s.sample}
                     </td>
-                    <td className="px-2.5 md:px-3 py-2 text-[9px] md:text-[10px] text-[rgba(232,232,240,0.55)] leading-snug align-top max-w-[280px]">
+                    <td className="px-2.5 md:px-3 py-2 text-[11px] text-[rgba(232,232,240,0.55)] leading-snug align-top max-w-[280px]">
                       {s.findings}
                     </td>
-                    <td className="px-2.5 md:px-3 py-2 text-[9px] md:text-[10px] text-[rgba(232,232,240,0.35)] align-top whitespace-nowrap">
+                    <td className="px-2.5 md:px-3 py-2 text-[11px] text-[rgba(232,232,240,0.35)] align-top whitespace-nowrap">
                       {s.design}
                     </td>
                   </tr>
@@ -1004,7 +1004,7 @@ function TableSlide() {
 
           {/* Legend / abbreviations */}
           <div className="mt-3 flex-shrink-0">
-            <p className="text-[7px] md:text-[8px] text-[rgba(232,232,240,0.2)] leading-relaxed max-w-5xl">
+            <p className="text-[9px] text-[rgba(232,232,240,0.2)] leading-relaxed max-w-5xl">
               <span className="font-semibold text-[rgba(232,232,240,0.3)]">Abbreviations: </span>
               AF: atrial fibrillation, POAF: postoperative AF, PWV: pulse wave velocity, cfPWV: carotid-femoral PWV, aPWV: aortic PWV, baPWV: brachial-ankle PWV, ePWV: estimated PWV, BMI: body mass index, HF: heart failure, HFpEF: heart failure with preserved ejection fraction, FMD: flow-mediated dilation, E/e′: ratio of early mitral inflow velocity to mitral annular early diastolic velocity, CHA₂DS₂-VASc: congestive heart failure, hypertension, age ≥75, diabetes, stroke/TIA, vascular disease, age 65–74, sex category score, HR: hazard ratio, OR: odds ratio, CI: confidence interval, SD: standard deviation, ICC: intraclass correlation coefficient, AUC: area under the curve, CV: cardiovascular, PP: pulse pressure.
             </p>
@@ -1080,7 +1080,7 @@ function FAQSlide() {
               <h2 className="text-lg md:text-2xl font-bold text-[rgba(232,232,240,0.95)]">
                 Anticipated Discussion Points
               </h2>
-              <p className="text-[9px] md:text-[10px] text-[rgba(232,232,240,0.25)] tracking-wider uppercase">
+              <p className="text-[11px] text-[rgba(232,232,240,0.25)] tracking-wider uppercase">
                 Frequently asked questions — tap to expand
               </p>
             </div>
@@ -1092,7 +1092,7 @@ function FAQSlide() {
               <button
                 key={i}
                 onClick={() => { setActiveTab(i as 0 | 1); setOpenIdx(null); }}
-                className="px-3 py-1.5 rounded-lg text-[10px] md:text-[11px] font-semibold transition-colors outline-none"
+                className="px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-colors outline-none"
                 style={{
                   background: activeTab === i ? `${c.color}20` : "rgba(255,255,255,0.02)",
                   border: `1px solid ${activeTab === i ? c.color + "40" : "rgba(255,255,255,0.05)"}`,
@@ -1124,7 +1124,7 @@ function FAQSlide() {
                     className="w-full flex items-start gap-2.5 px-3 md:px-3.5 py-2 md:py-2.5 text-left outline-none"
                   >
                     <span
-                      className="w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 text-[8px] md:text-[9px] font-mono font-bold"
+                      className="w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 text-[10px] font-mono font-bold"
                       style={{
                         background: isOpen ? cat.color : `${cat.color}15`,
                         color: isOpen ? "#050510" : cat.color,
@@ -1133,7 +1133,7 @@ function FAQSlide() {
                       {i + 1}
                     </span>
                     <span
-                      className="text-[11px] md:text-[12px] font-medium flex-1 leading-snug"
+                      className="text-[13px] font-medium flex-1 leading-snug"
                       style={{ color: isOpen ? "rgba(232,232,240,0.9)" : "rgba(232,232,240,0.55)" }}
                     >
                       {faq.q}
@@ -1147,7 +1147,7 @@ function FAQSlide() {
                   </button>
                   {isOpen && (
                     <div className="px-3 md:px-3.5 pb-3 pt-0">
-                      <p className="pl-6.5 md:pl-[30px] text-[10px] md:text-[11px] text-[rgba(232,232,240,0.45)] leading-relaxed">
+                      <p className="pl-6.5 md:pl-[30px] text-[12px] text-[rgba(232,232,240,0.45)] leading-relaxed">
                         {faq.a}
                       </p>
                     </div>
@@ -1258,7 +1258,7 @@ function SourcesSlide() {
               <h2 className="text-lg md:text-2xl font-bold text-[rgba(232,232,240,0.95)]">
                 References
               </h2>
-              <p className="text-[9px] md:text-[10px] text-[rgba(232,232,240,0.25)] tracking-wider uppercase">
+              <p className="text-[11px] text-[rgba(232,232,240,0.25)] tracking-wider uppercase">
                 {references.length} sources cited
               </p>
             </div>
@@ -1276,10 +1276,10 @@ function SourcesSlide() {
                     key={i}
                     className="break-inside-avoid mb-1.5 flex items-start gap-2"
                   >
-                    <span className="text-[9px] md:text-[10px] font-mono text-[#457b9d] w-5 md:w-6 text-right flex-shrink-0 pt-px">
+                    <span className="text-[11px] font-mono text-[#457b9d] w-5 md:w-6 text-right flex-shrink-0 pt-px">
                       {i + 1}.
                     </span>
-                    <p className="text-[9px] md:text-[10px] text-[rgba(232,232,240,0.4)] leading-relaxed">
+                    <p className="text-[11px] text-[rgba(232,232,240,0.4)] leading-relaxed">
                       {text}
                       {doiStr && (
                         <>
@@ -1317,7 +1317,7 @@ function ConclusionsSlide() {
 
         <div className="relative z-10 w-full max-w-7xl mx-auto">
           <div className="text-center mb-5 md:mb-8">
-            <p className="text-[9px] md:text-[10px] font-semibold tracking-[0.18em] uppercase text-[rgba(232,232,240,0.25)] mb-1 md:mb-2">
+            <p className="text-[11px] font-semibold tracking-[0.18em] uppercase text-[rgba(232,232,240,0.25)] mb-1 md:mb-2">
               Key Takeaways
             </p>
             <h2 className="text-xl md:text-3xl font-bold text-[rgba(232,232,240,0.95)]">
@@ -1349,7 +1349,7 @@ function ConclusionsSlide() {
                         className="w-1 h-1 rounded-full mt-[6px] flex-shrink-0"
                         style={{ background: section.color }}
                       />
-                      <span className="text-[10px] md:text-[11px] text-[rgba(232,232,240,0.5)] leading-relaxed">
+                      <span className="text-[12px] text-[rgba(232,232,240,0.5)] leading-relaxed">
                         {point}
                       </span>
                     </li>
@@ -1360,7 +1360,7 @@ function ConclusionsSlide() {
           </div>
 
           <div className="text-center space-y-2 md:space-y-3 pb-8 md:pb-0">
-            <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] text-[9px] md:text-[10px] text-[rgba(232,232,240,0.25)]">
+            <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] text-[11px] text-[rgba(232,232,240,0.25)]">
               Full reference list available in the original research poster
             </div>
 
@@ -1369,7 +1369,7 @@ function ConclusionsSlide() {
                 (inst, i) => (
                   <span
                     key={i}
-                    className="text-[10px] md:text-[11px] text-[rgba(232,232,240,0.25)]"
+                    className="text-[12px] text-[rgba(232,232,240,0.25)]"
                   >
                     {inst}
                     {i < 2 && (
@@ -1380,7 +1380,7 @@ function ConclusionsSlide() {
               )}
             </div>
 
-            <p className="text-[9px] md:text-[10px] text-[rgba(232,232,240,0.12)]">
+            <p className="text-[11px] text-[rgba(232,232,240,0.12)]">
               © {new Date().getFullYear()} · Nedjar, Kahook, Shah, Mihos, Kesselman
             </p>
           </div>
