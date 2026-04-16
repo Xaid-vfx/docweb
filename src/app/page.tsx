@@ -215,8 +215,8 @@ export default function Home() {
         <span className="text-[10px] text-[rgba(232,232,240,0.12)] tracking-[0.15em] font-mono">
           {String(current + 1).padStart(2, "0")} — {String(SLIDES.length).padStart(2, "0")}
         </span>
-        <span className="text-[10px] text-[rgba(232,232,240,0.1)] tracking-wider">
-          scroll · arrows · click dots
+        <span className="text-[10px] text-[rgba(232,232,240,0.14)] tracking-wider">
+          Use your scroll wheel, arrow keys, or click the dots on the right to navigate between sections
         </span>
       </div>
 
@@ -254,74 +254,103 @@ export default function Home() {
    ================================================================ */
 function CoverSlide() {
   return (
-    <div className="h-full flex flex-col items-center justify-center px-5 md:px-6 relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_45%,rgba(230,57,70,0.05)_0%,transparent_70%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_25%_60%,rgba(69,123,157,0.03)_0%,transparent_50%)]" />
+    <div className="h-full overflow-y-auto slide-scroll">
+      <div className="min-h-full flex flex-col items-center justify-between px-5 md:px-6 py-10 md:py-14 relative">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_45%,rgba(230,57,70,0.05)_0%,transparent_70%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_25%_60%,rgba(69,123,157,0.03)_0%,transparent_50%)]" />
 
-      <div className="relative z-10 text-center max-w-4xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 rounded-full bg-[rgba(230,57,70,0.07)] border border-[rgba(230,57,70,0.12)] mb-6 md:mb-10">
-          <span className="w-[6px] h-[6px] rounded-full bg-[#e63946] pulse-dot-sm" />
-          <span className="text-[9px] md:text-[10px] font-semibold tracking-[0.18em] uppercase text-[#e63946]">
-            Scoping Review
-          </span>
+        {/* ─ Top spacer for vertical centering balance ─ */}
+        <div className="flex-1" />
+
+        {/* ─ Main content ─ */}
+        <div className="relative z-10 text-center max-w-4xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 rounded-full bg-[rgba(230,57,70,0.07)] border border-[rgba(230,57,70,0.12)] mb-6 md:mb-8">
+            <span className="w-[6px] h-[6px] rounded-full bg-[#e63946] pulse-dot-sm" />
+            <span className="text-[9px] md:text-[10px] font-semibold tracking-[0.18em] uppercase text-[#e63946]">
+              Scoping Review
+            </span>
+          </div>
+
+          <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-[5.5rem] font-extrabold leading-[0.92] tracking-tight mb-3 md:mb-4">
+            <span className="gradient-text block">Pulse Wave</span>
+            <span className="gradient-text block">Velocity</span>
+          </h1>
+
+          <p className="text-xl sm:text-2xl md:text-4xl font-light text-[rgba(232,232,240,0.85)] mb-1 md:mb-2 tracking-tight">
+            in <span className="gradient-text-blue font-bold">Atrial Fibrillation</span>
+          </p>
+
+          <p className="text-sm md:text-base text-[rgba(232,232,240,0.35)] mb-5 md:mb-6 tracking-wide">
+            Clinical Significance and Current Evidence
+          </p>
+
+          <div className="max-w-xs mx-auto mb-5 md:mb-7 opacity-60">
+            <ECGLine />
+          </div>
+
+          {/* Authors */}
+          <div className="flex flex-wrap justify-center gap-x-2 md:gap-x-3 gap-y-1 text-[11px] md:text-[12px] text-[rgba(232,232,240,0.5)] mb-2">
+            {["Oren Nedjar, B.S.¹", "Zaneh Kahook, B.S.¹", "Syed Maaz Shah, B.S.²", "Christos G. Mihos, D.O.³", "Marc Kesselman, D.O.¹"].map(
+              (a, i, arr) => (
+                <span key={i}>
+                  {a}
+                  {i < arr.length - 1 && (
+                    <span className="ml-1 md:ml-2 text-[rgba(232,232,240,0.15)]">·</span>
+                  )}
+                </span>
+              )
+            )}
+          </div>
+
+          {/* Affiliations */}
+          <p className="text-[9px] md:text-[10px] text-[rgba(232,232,240,0.25)] leading-relaxed max-w-xl mx-auto hidden sm:block">
+            ¹ Nova Southeastern University Dr. Kiran C. Patel College of Osteopathic Medicine ·{" "}
+            ² Kansas City College of Osteopathic Medicine ·{" "}
+            ³ Division of Cardiology, Mount Sinai Medical Center, Miami Beach, FL
+          </p>
+          <p className="text-[9px] text-[rgba(232,232,240,0.25)] leading-relaxed sm:hidden">
+            ¹ NSU KPCOM · ² Kansas City COM · ³ Mount Sinai, Miami Beach
+          </p>
+
+          {/* Award callout */}
+          <p className="mt-4 md:mt-5 text-[10px] md:text-[11px] text-[rgba(232,232,240,0.35)] italic">
+            Previously presented and awarded at the FIU Translational Research Conference
+          </p>
+
+          {/* Supplemental note */}
+          <p className="mt-4 md:mt-5 text-[10px] md:text-[11px] text-[rgba(232,232,240,0.32)] leading-relaxed max-w-lg mx-auto">
+            This website is a supplemental academic companion to the poster presented at the
+            Heart of the City Cardiovascular Symposium (Cleveland Clinic Florida). It is intended
+            to provide expanded mechanistic context, supporting evidence, and anticipated
+            discussion points for viewers who wish to explore the topic in greater depth. It is
+            best experienced alongside the printed poster.
+          </p>
         </div>
 
-        <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-[5.5rem] font-extrabold leading-[0.92] tracking-tight mb-3 md:mb-4">
-          <span className="gradient-text block">Pulse Wave</span>
-          <span className="gradient-text block">Velocity</span>
-        </h1>
+        {/* ─ Bottom spacer ─ */}
+        <div className="flex-1" />
 
-        <p className="text-xl sm:text-2xl md:text-4xl font-light text-[rgba(232,232,240,0.85)] mb-1 md:mb-2 tracking-tight">
-          in <span className="gradient-text-blue font-bold">Atrial Fibrillation</span>
-        </p>
-
-        <p className="text-sm md:text-base text-[rgba(232,232,240,0.35)] mb-5 md:mb-8 tracking-wide">
-          Clinical Significance and Current Evidence
-        </p>
-
-        <div className="max-w-xs mx-auto mb-6 md:mb-10 opacity-60">
-          <ECGLine />
-        </div>
-
-        <div className="flex flex-wrap justify-center gap-x-2 md:gap-x-3 gap-y-1 text-[11px] md:text-[12px] text-[rgba(232,232,240,0.4)] mb-2 md:mb-3">
-          {["Oren Nedjar¹", "Zaneh Kahook¹", "Syed Maaz Shah²", "C.G. Mihos³", "M. Kesselman¹"].map(
-            (a, i, arr) => (
-              <span key={i}>
-                {a}
-                {i < arr.length - 1 && (
-                  <span className="ml-1 md:ml-2 text-[rgba(232,232,240,0.12)]">·</span>
-                )}
-              </span>
-            )
-          )}
-        </div>
-
-        <p className="text-[9px] md:text-[10px] text-[rgba(232,232,240,0.2)] leading-relaxed max-w-xl mx-auto hidden sm:block">
-          ¹ Nova Southeastern University Dr. Kiran C. Patel College of Osteopathic Medicine ·{" "}
-          ² Kansas City College of Osteopathic Medicine ·{" "}
-          ³ Division of Cardiology, Mount Sinai Medical Center, Miami Beach, FL
-        </p>
-        <p className="text-[9px] text-[rgba(232,232,240,0.2)] leading-relaxed sm:hidden">
-          ¹ NSU KPCOM · ² Kansas City COM · ³ Mount Sinai, Miami Beach
-        </p>
-
-        <div className="mt-6 md:mt-10 flex flex-wrap justify-center gap-2 md:gap-3">
-          {[
-            { val: "50M+", desc: "Affected worldwide", color: "#e63946" },
-            { val: "PWV", desc: "Gold-standard measure", color: "#457b9d" },
-            { val: "Central", desc: "Stronger associations", color: "#2a9d8f" },
-            { val: "Bi-directional", desc: "Mutual influence", color: "#9b5de5" },
-          ].map((s, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-1.5 md:gap-2.5 px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)]"
+        {/* ─ Contact footer ─ */}
+        <div className="relative z-10 w-full max-w-lg mx-auto text-center pt-6 md:pt-8 border-t border-[rgba(232,232,240,0.06)]">
+          <p className="text-[10px] md:text-[11px] text-[rgba(232,232,240,0.3)] mb-3">
+            Open to collaboration and research connections in cardiovascular medicine.
+          </p>
+          <div className="flex items-center justify-center gap-4">
+            <a
+              href="mailto:on68@mynsu.nova.edu"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] text-[10px] md:text-[11px] text-[rgba(232,232,240,0.45)] hover:text-[rgba(232,232,240,0.7)] hover:border-[rgba(255,255,255,0.12)] transition-colors"
             >
-              <span className="text-xs md:text-sm font-bold" style={{ color: s.color }}>
-                {s.val}
-              </span>
-              <span className="text-[9px] md:text-[10px] text-[rgba(232,232,240,0.3)]">{s.desc}</span>
-            </div>
-          ))}
+              <span>✉</span> on68@mynsu.nova.edu
+            </a>
+            <a
+              href="http://www.linkedin.com/in/oren-nedjar"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] text-[10px] md:text-[11px] text-[rgba(232,232,240,0.45)] hover:text-[rgba(232,232,240,0.7)] hover:border-[rgba(255,255,255,0.12)] transition-colors"
+            >
+              <span>in</span> LinkedIn
+            </a>
+          </div>
         </div>
       </div>
     </div>
